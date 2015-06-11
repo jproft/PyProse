@@ -1,0 +1,86 @@
+AdjUnit #PushPlur #ForceSing Noun #PopPlur
+AdjUnit #PushPlur Substance #PopPlur
+AdjUnit 9 Adjective
+AdjUnit 6 InPresPart
+AdjUnit 3 Possessive
+
+AdvbPhrase !as #PushPlur Adverb !as Noun #PopPlur
+AdvbPhrase 8 Adverb
+AdvbPhrase 4 PrepPhrase
+CompPhrase #PushPlur !as Adjective !as Noun #PopPlur
+CompPhrase #PushPlur !more Adjective !than Determiner Noun #PopPlur
+CompPhrase #PushPlur Adjective !as Noun #PopPlur
+
+DepClause SubordConj !to IntransInf #ForceSing #ForceThird VerbPhrase
+DepClause 5 SubordConj NounPhrase VerbPhrase
+DepClause 8 SubordConj SubjPron VerbPhrase
+
+IndClause !to IntransInf #ForceSing #ForceThird VerbPhrase
+IndClause NounPhrase @( NounPhrase @) VerbPhrase
+IndClause 9 NounPhrase VerbPhrase
+IndClause 6 SubjPron VerbPhrase
+
+IntrVbUnit Adverb IntrVerb
+IntrVbUnit IntrVerb
+IntrVbUnit AuxInf !to IntransInf
+IntrVbUnit AuxVerb IntransInf
+IntrVbUnit Copula InPresPart
+IntrVbUnit 2 IntrVerb
+IntrVbUnit ToHave InPastPart
+
+NounPhrase !so #ForceSing Adjective IndefArt Noun
+NounPhrase !the Noun !of #PushPlur Substance #PopPlur
+NounPhrase #ForcePlur Noun
+NounPhrase 4 Determiner AdjUnit Noun
+NounPhrase 8 Determiner Noun
+NounPhrase 3 NounPhrase PrepPhrase
+NounPhrase 3 PossPron Noun
+NounPhrase Substance
+
+ObjPhrase NounPhrase
+ObjPhrase ObjPron
+
+PrepPhrase !between #PushPlur Determiner Noun #PopPlur !and #PushPlur Determiner Noun #PopPlur
+PrepPhrase 8 Prepos #PushPlur NounPhrase #PopPlur
+
+Question #ForceThird ToHave NounPhrase InPastPart
+Question #ForceThird ToHave NounPhrase TrPastPart NounPhrase
+Question AuxVerb NounPhrase IntransInf
+Question AuxVerb NounPhrase TransInf NounPhrase
+Question IntObjPron #ForceThird Copula NounPhrase TrPresPart
+Question IntObjPron #ForceThird ToHave NounPhrase TrPastPart
+Question IntObjPron AuxVerb NounPhrase TransInf
+Question IntObjPron Copula SubjPron TrPresPart
+Question IntObjPron ToHave SubjPron TrPastPart
+Question IntPron #ForceThird Copula NounPhrase InPresPart
+Question IntPron #ForceThird ToHave NounPhrase InPastPart
+Question IntPron AuxVerb NounPhrase IntransInf
+Question IntPron Copula SubjPron InPresPart
+Question IntPron ToHave SubjPron InPastPart
+Question ToHave SubjPron InPastPart
+Question ToHave SubjPron TrPastPart NounPhrase
+
+Sentence DepClause @, IndClause @, !and IndClause @.
+Sentence 2 DepClause @, IndClause @.
+Sentence DepClause @, Question @?
+Sentence IndClause @, !and IndClause @.
+Sentence IndClause @, !but IndClause @.
+Sentence 7 IndClause @.
+Sentence IndClause @; !and Sentence
+Sentence IndClause @; Sentence
+Sentence NounPhrase @- Question @?
+Sentence NounPhrase @: NounPhrase @.
+Sentence 6 Question @?
+Sentence !he !who #ForceSing #ForceThird VerbPhrase VerbPhrase @.
+
+TranVbUnit Adverb TransVerb
+TranVbUnit 4 TransVerb
+TranVbUnit AuxInf !to TransInf
+TranVbUnit 2 AuxVerb TransInf
+TranVbUnit 3 TransVerb
+TranVbUnit Copula TrPresPart
+TranVbUnit ToHave TrPastPart
+
+VerbPhrase Copula NounPhrase
+VerbPhrase IntrVbUnit
+VerbPhrase TranVbUnit ObjPhrase
