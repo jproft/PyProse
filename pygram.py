@@ -80,19 +80,20 @@ class Sentence:
         s += ']'
         return s
 
-    # streamline the interface for plurStack
     def pIsUnset(self):
-        if self.plurStack[CURRENT] == UNSET: return True
-        else: return False
+        return self.plurStack[CURRENT] == UNSET
+
     def pIsSing(self):
-        if self.plurStack[CURRENT] == SINGULAR: return True
-        else: return False
+        return self.plurStack[CURRENT] == SINGULAR
+
     def pIsPlur(self):
-        if self.plurStack[CURRENT] == PLURAL: return True
-        else: return False
+        return self.plurStack[CURRENT] == PLURAL
+
     def pUnset(self):           # called only in pydict doPunct
         self.plurStack[CURRENT] = UNSET
+
     def pSetSing(self):
         self.plurStack[CURRENT] = SINGULAR
+
     def pSetPlur(self):
         self.plurStack[CURRENT] = PLURAL

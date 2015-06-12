@@ -10,6 +10,12 @@ from dictionary import DICTIONARY
 flagchars = '!\#@'		# mark special comps in sentence template
 
 
+# dictionary encoding note: self.Di[partname][someinx][0] is the word,
+# self.Di[partname][someinx][1] is syllables, [2] is stress;
+# the flags at the end of each entry are encoded as:
+# self.Di[part][inx][FLAGS][ISSING], . . . [FLAGS][ISPLUR],
+# . . . [FLAGS][ISREG] -- see pyprosecommon.py
+
 class PDict:
 
     def __init__(self, mom):
@@ -20,17 +26,6 @@ class PDict:
             for entry in entries:
                 self.Di[part].append(entry.split())
 
-        #self.funcDict = {'Determiner': self.doDeterminer, 'IndefArt': self.doIndefArt,
-                            #'Copula': self.doCopula, 'ToHave': self.doToHave, 
-                            #'SubjPron': self.doSubjPron, 'Possessive': self.doPossessive,
-                            #'TransVerb': self.}
-
-# dictionary encoding note: self.Di[partname][someinx][0] is the word,
-# self.Di[partname][someinx][1] is syllables, [2] is stress;
-# the flags at the end of each entry are encoded as:
-# self.Di[part][inx][FLAGS][ISSING], . . . [FLAGS][ISPLUR],
-# . . . [FLAGS][ISREG] -- see pyprosecommon.py
-
     # central distribution point for language-massage machinery --
     # returns a string which is the finished sentence
     # alters sData, but it's mutable (object of type Sentence), no need
@@ -40,45 +35,57 @@ class PDict:
         s = ''			# where our sentence accumulates
         for i in template:	# from grammar.BuildTemplate
             addword = ''
-            if i[0] == '!': addword = i[1:]		# word-literal
-            elif i[0] == '#': self.doFlags(i[1:], sData)
-            elif i[0] == '@': addword = self.doPunct(i[1:], sData)
-###            elif i in self.funcDict: addword = self.funcDict[i](sData)
-            elif i == 'Determiner': addword = self.doDeterminer(sData)
+            if i[0] == '!':
+                addword = i[1:]		# word-literal
+            elif i[0] == '#':
+                self.doFlags(i[1:], sData)
+            elif i[0] == '@':
+                addword = self.doPunct(i[1:], sData)
+            elif i == 'Determiner':
+                addword = self.doDeterminer(sData)
             elif i == 'IndefArt':	# sometimes the grammar specifies
-                sData.indefArtPending = True
-                sData.pSetSing()
-                addword = 'a'
-            elif i == 'Copula': addword = self.doCopula(sData)
-            elif i == 'ToHave': addword = self.doToHave(sData)
-            elif i == 'SubjPron': addword = self.doSubjPron(sData)
-            elif i == 'Possessive': addword = self.doPossessive(sData)
+                addword = self.doIndefArt(sData)
+            elif i == 'Copula':
+                addword = self.doCopula(sData)
+            elif i == 'ToHave':
+                addword = self.doToHave(sData)
+            elif i == 'SubjPron':
+                addword = self.doSubjPron(sData)
+            elif i == 'Possessive':
+                addword = self.doPossessive(sData)
             elif i in ('TransVerb', 'IntrVerb', 'AuxInf'):
                 addword = self.doFiniteVerb(i, sData)
-            elif i[-4:] == 'Part': addword = self.doParticiple(i, sData)
+            elif i[-4:] == 'Part':
+                addword = self.doParticiple(i, sData)
             elif i not in ('Noun', 'Substance', 'Adjective', 'AuxVerb'):
                 addword = random.choice(self.Di[i])[0]
             else:
-                if sData.person == UNSET: sData.person = THIRD	# cheat
-                while 1:	# loop until word can be made to conform
+                if sData.person == UNSET:
+                    sData.person = THIRD	# cheat
+                while True:	# loop until word can be made to conform
                     w = random.choice(self.Di[i])
                     if sData.pIsUnset():
-                        if w[FLAGS][ISSING] in 'tT': sData.pSetSing()
-                        else: sData.pSetPlur()
+                        if w[FLAGS][ISSING] in 'tT':
+                            sData.pSetSing()
+                        else:
+                            sData.pSetPlur()
                     if self.agree(w, sData):
                         addword = w[0]
                         break			# success, by luck
                     # what gets here disagrees with current plurality
-                    if i not in ('Noun', 'Substance'): continue # retry
+                    if i not in ('Noun', 'Substance'):
+                        continue # retry
                     if w[FLAGS][ISREG] in 'fF': # irregular noun
                         continue	# retry new word
                     addword = self.doPlural(w[0])
                     break
             if sData.indefArtPending and addword and addword != 'a':
-                if addword[0] in VOWELS: s += 'n'
+                if addword[0] in VOWELS:
+                    s += 'n'
                 sData.indefArtPending = False
             # conditions for adding blank before "words"
-            if s and (i[0] not in '#@') and (s[-1] != '('): s += ' '
+            if s and (i[0] not in '#@') and (s[-1] != '('):
+                s += ' '
             if addword == None:
                 addword = "<program error!>"
             s += addword
@@ -88,11 +95,8 @@ class PDict:
     # end of BuildSentence (major distribution point)
 
     def agree(self, wordentry, sData):
-        if wordentry[FLAGS][ISSING] in 'tT' and sData.pIsSing():
-            return True
-        if wordentry[FLAGS][ISPLUR] in 'tT' and sData.pIsPlur():
-            return True
-        return False
+        return (wordentry[FLAGS][ISSING] in 'tT' and sData.pIsSing()
+             or wordentry[FLAGS][ISPLUR] in 'tT' and sData.pIsPlur())
 
     def doIndefArt(self, sData):
         sData.indefArtPending = True
