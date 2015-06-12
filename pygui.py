@@ -234,9 +234,8 @@ class OutputSTC(stc.StyledTextCtrl):
                 wx.CallAfter(self.OnMouseDown, event.GetPosition())
 
         def OnMouseDown(self, mouseclickpos):
-                if self.handled:
-                        return
                 mom = self.GetParent()
+                if self.handled or not len(mom.s): return
                 clickpos = self.PositionFromPoint(mouseclickpos)
                 for inx in range(len(mom.s)):
                         if mom.s[inx].offset > clickpos: break
