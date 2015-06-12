@@ -8,17 +8,6 @@ from pyprosecommon import *
 from grammar import GRAMMAR
 
 
-# note on __init__: the 'mom' argument is a concession to the fact that
-# PDict and Grammar must be owned by the Frame, if only because this
-# module and the grammar one can't import the GUI one, for the sake
-# of importing the random module at a controlled Last Point (for
-# get/set state)
-
-# the "weight" factor for rules (a number after the predicate) is treated
-# here as controlling the number of repetitions of the rule in the
-# grammar (only the old "Design a Sentence" function valued non-repetition
-# in the grammar
-
 class Grammar:
 
     def __init__(self, mom):
@@ -38,45 +27,53 @@ class Grammar:
                 for i in range(weight): # repeat rule in Gr
                     self.Gr[pred].append(slist[start:])
 
-    def BuildTemplate(self):
-        self.template = []
-        self._buildTemplate('Sentence', 0)
-        return self.template
-
-    def _buildTemplate(self, predicate, level):
-        """Recursively build a sentence template; 'level' arg tracks recursion for display"""
-        self.mom.treeWin.AddText(TREEBLANK * level + predicate + '\n')
+    def BuildTemplate(self, predicate="Sentence", level=0):
+        if not level:
+            self.template = []
+        self.mom.treeWin.AddText(TAB * level + predicate + '\n')
         for c in random.choice(self.Gr[predicate]):
-            if c not in self.Gr:	# a twig
-                self.mom.treeWin.AddText(TREEBLANK * (level+1) + '->' + c + '\n')
+            if c not in self.Gr: # a twig
+                self.mom.treeWin.AddText(TAB * (level+1) + TWG + c + '\n')
                 self.template.append(c)
-            else: self._buildTemplate(c, level + 1)
-
+            else:
+                self.BuildTemplate(c, level + 1)
+        return self.template
 
 
 class Sentence:
 
     def __init__(self):
-        self.randstate = random.getstate()		# will do again
-        self.offset = 0			# will be set for each as added
-        self.length = 0			# ditto
-        self.plurStack = [None]  # stack of plurality states
-        self.tense = PRESENT	# set at random per sentence
+        self.offset = 0
+        self.length = 0
         self.person = None
+        self.tense = PRESENT
+        self.plurStack = [None]
         self.indefArtPending = False
+        self.randstate = random.getstate()
 
-    def __repr__(self):			# to print for debugging
+    def __repr__(self):
         s = 'offset ' + `self.offset`
-        if self.person == FIRST: s += ', person FIRST'
-        elif self.person == SECOND: s += ', person SECOND'
-        else: s += ', person THIRD'
-        if self.tense == PRESENT: s += ', tense PRESENT'
-        else: s += ', tense PAST'
+        # Add person to string.
+        if self.person == FIRST:
+            s += ', person FIRST'
+        elif self.person == SECOND:
+            s += ', person SECOND'
+        else:
+            s += ', person THIRD'
+        # Add tense to string.
+        if self.tense == PRESENT:
+            s += ', tense PRESENT'
+        else:
+            s += ', tense PAST'
         s += ', plur: ['
+        # Add plurality to string.
         for i in self.plurStack:
-            if i == SINGULAR: s += "sing,"
-            elif i == PLURAL: s += "plur,"
-            else: s += 'unset,'
+            if i == SINGULAR:
+                s += "sing,"
+            elif i == PLURAL:
+                s += "plur,"
+            else:
+                s += 'unset,'
         s += ']'
         return s
 
@@ -89,7 +86,7 @@ class Sentence:
     def pIsPlur(self):
         return self.plurStack[CURRENT] == PLURAL
 
-    def pUnset(self):           # called only in pydict doPunct
+    def pUnset(self):
         self.plurStack[CURRENT] = UNSET
 
     def pSetSing(self):

@@ -46,8 +46,8 @@ PASTTENSE       = 2
 PASTPARTICIPLE  = 3
 
 # used in display of trees, and calculations on them
-TREEBLANK = " " * 6
-TWIGMARK  = "->"
+TAB = " " * 6
+TWG = "->"
 
 ABOUT_TEXT = """\
 A Python version of "Prose"
