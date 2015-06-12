@@ -5,6 +5,7 @@
 
 import random
 from pyprosecommon import *
+from dictionary import DICTIONARY
 
 flagchars = '!\#@'		# mark special comps in sentence template
 
@@ -14,16 +15,10 @@ class PDict:
     def __init__(self, mom, filename):
         self.mom = mom
         self.Di = {}
-        dfile = open(filename, 'rU')
-        partname = ''	# we count on partname holding CURRENT one
-        for line in dfile.readlines():
-            if len(line) < 3: continue		# 3 is arbitrary
-            slist = line.split()
-            if slist[0] == 'PART:': # start new speech-part
-                partname = slist[1]
-                self.Di[partname] = []
-            else: self.Di[partname].append(slist)
-        dfile.close()
+        for part, entries in DICTIONARY.items():
+            self.Di[part] = []
+            for entry in entries:
+                self.Di[part].append(entry.split())
 
         #self.funcDict = {'Determiner': self.doDeterminer, 'IndefArt': self.doIndefArt,
                             #'Copula': self.doCopula, 'ToHave': self.doToHave, 
