@@ -7,9 +7,6 @@ import random
 from pyprosecommon import *
 from dictionary import DICTIONARY
 
-flagchars = '!\#@'		# mark special comps in sentence template
-
-
 # dictionary encoding note: self.Di[partname][someinx][0] is the word,
 # self.Di[partname][someinx][1] is syllables, [2] is stress;
 # the flags at the end of each entry are encoded as:
