@@ -5,6 +5,7 @@
 
 import random
 from pyprosecommon import *
+from grammar import GRAMMAR
 
 
 # note on __init__: the 'mom' argument is a concession to the fact that
@@ -24,26 +25,20 @@ class Grammar:
         """Read the Grammar file into the internal data structure"""
         self.mom = mom
         self.Gr = {}
-        gfile = open(filename, 'rU')
-        for line in gfile.readlines():
-            if len(line) < 3: continue	# "blank" (3 is arbitrary)
-            slist = line.split()
-            pred = slist[0]
-            if slist[1].isdigit():
-                weight = int(slist[1])
-                start = 2
-            else:
-                weight = start = 1
-            for i in range(weight): # repeat rule in Gr
-                if pred not in self.Gr:
-                    self.Gr[pred] = [slist[start:]]
+        for pred, rules in GRAMMAR.items():
+            for rule in rules:
+                slist = rule.split()
+                if slist[0].isdigit():
+                    weight = int(slist[0])
+                    start = 1
                 else:
-                    self.Gr[pred].append(slist[start:])
-        # mere curiosity: how many grammar rules?
-        # self.gramLines = 0
-        # for j in self.Gr:
-        #   self.gramLines += len(self.Gr[j])
-        gfile.close()
+                    weight = 1
+                    start = 0
+                for i in range(weight): # repeat rule in Gr
+                    if pred not in self.Gr:
+                        self.Gr[pred] = [slist[start:]]
+                    else:
+                        self.Gr[pred].append(slist[start:])
 
     def BuildTemplate(self):
         self.template = []
