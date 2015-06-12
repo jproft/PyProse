@@ -4,7 +4,10 @@
 # many of these are determined by the (ancient!) encoding of the
 # dictionary file PyProse inherits from earlier incarnations of Prose
 
-import sys
+from sys import version as PY_VERSION
+from wx import __version__ as WX_VERSION
+
+PYPROSE_VERSION = "2.0"
 
 PLURAL     = 2
 SINGULAR   = 1
@@ -46,25 +49,27 @@ PASTPARTICIPLE  = 3
 TREEBLANK = " " * 6
 TWIGMARK  = "->"
 
-abouttxt = """\
+ABOUT_TEXT = """\
 A Python version of "Prose"
 (for explanations see
         Virtual Muse: Experiments in Computer Poetry  
         Wesleyan University Press, 1996)
 
-        Charles O. Hartman  
+        By Charles O. Hartman  
         charles.hartman@conncoll.edu
 
-Version 1.0, March 2012
-"""
+        Programming contributions by Julia Proft
+        
+Version %s  |  Python %s  |  wxPython %s
+""" % (PYPROSE_VERSION, PY_VERSION.split()[0], WX_VERSION)
 
-helptxt = """\
+HELP_TEXT = """\
 PyProse generates sentences, It uses randomness
 in two ways: First a sentence template (syntactical 
 frame) is built by random choice among the rules 
-in PROSE.GRA. Then the slots in the template are 
+in grammar.py. Then the slots in the template are 
 filled by random choice from the dictionary in 
-PROSE.DIC.
+dictionary.py.
 
 Press the spacebar to generate a sentence, or use
 the Sentence menu -- which also offers a "keep 

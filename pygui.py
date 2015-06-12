@@ -82,14 +82,12 @@ class ProseFrame(wx.Frame):
                 self.AboutBox()
 
         def AboutBox(self):
-                versionInfo = "\tPython " + sys.version.split()[0] + "\n\twxPython " + wx.__version__
-                msg = abouttxt + versionInfo
-                dlg = wx.MessageDialog(self, message=msg, caption="PyProse", style=wx.OK)
+                dlg = wx.MessageDialog(self, message=ABOUT_TEXT, caption="PyProse", style=wx.OK)
                 dlg.ShowModal()
                 dlg.Destroy()
 
         def ShowHelp(self, evt):
-                dlg = wx.MessageDialog(self, message=helptxt, caption="PyProse Help", style=wx.OK)
+                dlg = wx.MessageDialog(self, message=HELP_TEXT, caption="PyProse Help", style=wx.OK)
                 dlg.ShowModal()
                 dlg.Destroy()
 
