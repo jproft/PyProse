@@ -57,8 +57,8 @@ class ProseFrame(wx.Frame):
 
         items = [
             ("&Save output\tCtrl+S", 101, self.SaveOutput),
-            ("&Generate one sentence\tCtrl+G", 201, self.GenOne),
-            ("&Until mouse-click\tCtrl+U", 202, self.GenMany),
+            ("&Generate one sentence\tCtrl+G", 201, self.GenSentence),
+            ("&Until mouse-click\tCtrl+U", 202, self.StartTimer),
             ("PyProse help", 301, self.ShowHelp),
             ("About PyProse", wx.ID_ABOUT, self.ShowAbout)
         ]
@@ -76,16 +76,17 @@ class ProseFrame(wx.Frame):
         wx.GetApp().SetMacHelpMenuTitleName("&Help")
         self.SetMenuBar(menuBar)
 
-        # OTHER SETUP #
+        # SETUP FOR CONTINUOUS GENERATION #
         
-        self.Timer = wx.Timer(self) # for continuous gen
-        self.Bind(wx.EVT_TIMER, self.GenOne)  # cf. menu 201
-        self.outSTC.Bind(wx.EVT_LEFT_DOWN, self.OnMouseDown)
+        self.Timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.GenSentence)
+        self.outSTC.Bind(wx.EVT_LEFT_DOWN, self.StopTimer)
 
-        self.AboutBox() # Show 'About' on start.
+        self.ShowAbout() # Show 'About' on start.
 
-    def SaveOutput(self, event):
+    def SaveOutput(self, evt=None):
         """Write all text output so far to a file"""
+        self.StopTimer()
         dlg = wx.FileDialog(
             self, message="Save As", defaultDir=getcwd(), 
             defaultFile="output.txt", wildcard="*.txt", 
@@ -96,10 +97,7 @@ class ProseFrame(wx.Frame):
                 f.write(self.outSTC.GetText())
         dlg.Destroy()
 
-    def ShowAbout(self, evt):
-        self.AboutBox()
-
-    def AboutBox(self):
+    def ShowAbout(self, evt=None):
         dlg = wx.MessageDialog(
             self, message=ABOUT_TEXT, 
             caption="PyProse", style=wx.OK
@@ -107,7 +105,7 @@ class ProseFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-    def ShowHelp(self, evt):
+    def ShowHelp(self, evt=None):
         dlg = wx.MessageDialog(
             self, message=HELP_TEXT, 
             caption="PyProse Help", style=wx.OK
@@ -115,24 +113,21 @@ class ProseFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-    def GenOne(self, evt):
-        self.GenerateSentence()
-
-    def GenMany(self, evt):
+    def StartTimer(self, evt=None):
         self.Timer.Start(100)
 
-    # this SHOULDN'T interfere with an OnMouseDown in either STC or TextCtrl
-    def OnMouseDown(self, evt):
+    def StopTimer(self, evt=None):
         if self.Timer.IsRunning():
             self.Timer.Stop()
-        else: evt.Skip()
 
-    def GenerateSentence(self):
+    def GenSentence(self, evt=None):
         """Calls grammar to make template, dictionary to fill it in"""
         # establish data for the sentence
         sData = pygram.Sentence()
-        if random.randint(0,1): sData.tense = PRESENT
-        else: sData.tense = PAST
+        if random.randint(0,1):
+            sData.tense = PRESENT
+        else:
+            sData.tense = PAST
         sData.randstate = random.getstate()
         # next three lines, the whole center of the business
         self.treeWin.ClearAll()         # prepare to draw new tree
@@ -306,7 +301,7 @@ class OutputSTC(stc.StyledTextCtrl):
     def OnKeyDown(self, event):
         """ Keystrokes: space for generate; escape to quit. """
         if event.KeyCode == wx.WXK_SPACE:
-            self.GetParent().GenerateSentence()
+            self.GetParent().GenSentence()
         elif event.KeyCode == wx.WXK_ESCAPE:
             self.GetParent().Close()
 
