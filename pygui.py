@@ -119,6 +119,8 @@ class ProseFrame(wx.Frame):
     def StopTimer(self, evt=None):
         if self.Timer.IsRunning():
             self.Timer.Stop()
+        elif evt:
+            evt.Skip()
 
     def GenSentence(self, evt=None):
         """Calls grammar to make template, dictionary to fill it in"""
@@ -184,21 +186,22 @@ class TreeSTC(stc.StyledTextCtrl):
                 )
         else:		# a predicate
             level = line.count(TREEBLANK);
-            twigCount = 0
+            twigCount = ln = 0
             for ln in range(cLine+1, self.GetLineCount()):
                 s = self.GetLine(ln)
                 if s.count(TREEBLANK) <= level:
                     break
                 if IsTwigLine(s):
                     twigCount += 1
-            endSel = self.PositionFromLine(ln-1) + self.LineLength(ln-1)
-            self.SetSelection(self.GetSelectionStart(), endSel)
-            twigs = MarkTwigLimits(mom, sentInx)
-            if len(twigs):
-                mom.outSTC.SetSelection(
-                    twigs[twigsBefore][0], 
-                    twigs[twigsBefore+twigCount-1][1]
-                )
+            if ln:
+                endSel = self.PositionFromLine(ln-1) + self.LineLength(ln-1)
+                self.SetSelection(self.GetSelectionStart(), endSel)
+                twigs = MarkTwigLimits(mom, sentInx)
+                if len(twigs) > twigsBefore:
+                    mom.outSTC.SetSelection(
+                        twigs[twigsBefore][0], 
+                        twigs[twigsBefore+twigCount-1][1]
+                    )
 #
 # # # # # # end of TreeStC itself
 
@@ -257,11 +260,14 @@ class OutputSTC(stc.StyledTextCtrl):
 
     def OnMouseDown(self, mouseclickpos):
         mom = self.GetParent()
-        if self.handled or not len(mom.s): return
+        if self.handled or not len(mom.s):
+            return
         clickpos = self.PositionFromPoint(mouseclickpos)
         for inx in range(len(mom.s)):
-                if mom.s[inx].offset > clickpos: break
-        if mom.s[inx].offset > clickpos: inx -= 1
+            if mom.s[inx].offset > clickpos:
+                break
+        if mom.s[inx].offset > clickpos:
+            inx -= 1
         sentend = mom.s[inx].offset + mom.s[inx].length - 1
         mom.currSent = inx
         self.SetSelection(mom.s[inx].offset, sentend)
@@ -275,28 +281,18 @@ class OutputSTC(stc.StyledTextCtrl):
     def OnDoubleClick(self, event):
         self.handled = 0                # coordination with single-click
         # select a single word (including internal punct, excluding terminal)
-        startword = endword = self.PositionFromPoint(event.GetPosition())
-        while startword > 0 and not chr(self.GetCharAt(startword)).isspace():
-            startword -= 1
-        startword += 1
-        if not chr(self.GetCharAt(startword)).isalnum():
-            startword += 1
-        while endword < self.GetTextLength() and not chr(self.GetCharAt(endword)).isspace():
-            endword += 1
+        bgn = fin = self.PositionFromPoint(event.GetPosition())
+        while bgn > 0 and not chr(self.GetCharAt(bgn)).isspace():
+            bgn -= 1
+        bgn += 1
+        if not chr(self.GetCharAt(bgn)).isalnum():
+            bgn += 1
+        while fin < self.GetTextLength() and not chr(self.GetCharAt(fin)).isspace():
+            fin += 1
         # flaw: excludes terminal apostrophe from plural possessives
-        if not chr(self.GetCharAt(endword - 1)).isalnum():
-            endword -= 1
-        self.SetSelection(startword, endword)
-
-# <this is where further code is called that will replace the word>
-# and how does that work? from the text I need to work back to position in the template (not easy!);
-# then go through something like PDict.BuildSentence() to get a new candidate for that slot; and
-# I may have to rerun the whole template up to that point to find out what the state of plurality, 
-# tense, and person is at that point. What a mess. Would keeping word-level data about each
-# sentence make more sense? (and then reconstructing the members of PDict to take arguments
-# for person, tense, plurality, rather than a single, simple Sentence data package)
-# What this begins to amount to is keeping all the output as some kind of internal data structure,
-# rather than using the STC, the display itself, as the data-home of all the sentences.
+        if not chr(self.GetCharAt(fin-1)).isalnum() and not chr(self.GetCharAt(fin-1)) == '\'':
+            fin -= 1
+        self.SetSelection(bgn, fin)
 
     def OnKeyDown(self, event):
         """ Keystrokes: space for generate; escape to quit. """
