@@ -130,25 +130,29 @@ class PDict:
 
     def doFlags(self, s, sData):
         # see pyprosecommon.py for definitions
-        if s == 'PushPlur': sData.plurStack.append(UNSET)		# stack grows from end!
-        elif s == 'PopPlur': sData.plurStack.pop(CURRENT)
-        # I've seen some problems with ForcePlur (and presumably ForceSing) being ignored.
-        # I suspect that these flags should work whether plurality is set or not. Experiment:
-        #elif s == 'ForceSing' and sData.pIsUnset(): sData.pSetSing()
-        #elif s == 'ForcePlur' and sData.pIsUnset(): sData.pSetPlur()
-        elif s == 'ForceSing': sData.pSetSing()
-        elif s == 'ForcePlur': sData.pSetPlur()
-        elif s == 'ForcePast': sData.tense = PAST
-        elif s == 'ForceThird': sData.person = THIRD
-        else: pass		# ? unknown sentence flag
+        if s == 'PushPlur':
+            sData.plurStack.append(UNSET)
+        elif s == 'PopPlur':
+            sData.plurStack.pop(CURRENT)
+        elif s == 'ForceSing':
+            sData.pSetSing()
+        elif s == 'ForcePlur':
+            sData.pSetPlur()
+        elif s == 'ForcePast':
+            sData.tense = PAST
+        elif s == 'ForceThird':
+            sData.person = THIRD
 
     def doPunct(self, char, sData):
-        if char in (',', ';'):
+        if char in ',;':
             sData.pUnset()	# plurality and person end (arbitrarily!)
             sData.person = UNSET	# at phrase/clause bounds
-        if char == '-': return ' --'
-        elif char == '(': return ' ' + char
-        else: return char
+        if char == '-':
+            return ' --'
+        elif char == '(':
+            return ' ' + char
+        else:
+            return char
         # omitting the random parens-to-dash conversion
 
     def doDeterminer(self, sData):
@@ -169,7 +173,7 @@ class PDict:
                 sData.indefArtPending = True
                 return 'a'
             else:
-                while 1:		# pick randomly until one matches
+                while True:		# pick randomly until one matches
                     w = random.choice(self.Di['Determiner'])
                     if self.agree(w, sData):
                         break
@@ -209,51 +213,60 @@ class PDict:
         if not sData.person:
             sData.person = random.choice((FIRST, SECOND, THIRD))
         if sData.pIsUnset():
-            if random.randint(0,1): sData.pSetSing()
-            else: sData.pSetPlur()
+            if random.randint(0,1):
+                sData.pSetSing()
+            else:
+                sData.pSetPlur()
         if sData.person == FIRST:
-            if sData.pIsSing(): return 'I'
-            else: return 'we'
-        elif sData.person == SECOND: return 'you'
-        else:			# the messier third person
+            if sData.pIsSing():
+                return 'I'
+            else:
+                return 'we'
+        elif sData.person == SECOND:
+            return 'you'
+        else: # the messier third person
             if sData.pIsPlur():
                 if not random.randint(0,2): # 1/3 of the time
                     return 'they'
                 else:
                     try:
-                        while 1:
+                        while True:
                             w = random.choice(self.Di['SubjPron'])
-                            if w[FLAGS][ISPLUR] in 'tT': break
+                            if w[FLAGS][ISPLUR] in 'tT':
+                                break
                         return w[0]
-                    except IndexError:	# probably bad dict entry?
-                        print `w` + ' went wrong as plur subjpron'
+                    except IndexError:
                         return w[0]
-            else:	# singular
-                if random.randint(0,1): # 1/2 time, use "he/she"
-                    if random.randint(0,1): return 'she'
-                    else: return 'he'
+            else: # singular
+                if random.randint(0,1):     # 1/2 of the time
+                    if random.randint(0,1):
+                        return 'she'
+                    else:
+                        return 'he'
                 else:
                     try:
-                        while 1:
+                        while True:
                             w = random.choice(self.Di['SubjPron'])
-                            if w[FLAGS][ISSING] in 'tT': break
+                            if w[FLAGS][ISSING] in 'tT':
+                                break
                         return w[0]
-                    except IndexError:	# probably bad dict entry!
-                        print `w` + ' went wrong as sing subjpron'
-                        return w[0] # use it anyway
+                    except IndexError:
+                        return w[0]
     # end of doSubjPron
 
     # the ONLY use of SYLS and STRESS in dictionary
     def doubleLastLetter(self, wd):
-        if len(wd[0]) < 3: return False
+        if len(wd[0]) < 3:
+            return False
         ult = wd[0][-1]
         penult = wd[0][-2]
         apult = wd[0][-3]
-        if ult in VOWELS or ult in 'yxw': return False
-        # adding this in response to "lookking"; but IS it general?
-        if ult == 'k': return False
-        if penult not in VOWELS or apult in VOWELS: return False
-        if wd[SYLS] != wd[STRESS]: return False
+        if ult in VOWELS or ult in 'yxwk':
+            return False
+        if penult not in VOWELS or apult in VOWELS:
+            return False
+        if wd[SYLS] != wd[STRESS]:
+            return False
         return True
 
     def getIrregVerb(self, wd, part):
@@ -268,67 +281,87 @@ class PDict:
         elif part == 'IntrVerb':
             dentry = random.choice(self.Di['IntransInf'])
         else: dentry = random.choice(self.Di['AuxInf'])
-        compound = dentry[0].split('_')      # phrasal verb
-        w = compound[0]		# the main-verb part of a phrasal
-        if len(compound) > 1: postpos = compound[1]
-        else: postpos = ''	# test at end for "if phrasal"
+        compound = dentry[0].split('_')  # phrasal verb
+        w = compound[0]   # the main-verb part of a phrasal
+        if len(compound) > 1:
+            postpos = compound[1]
+        else:
+            postpos = ''  # test at end for "if phrasal"
         # build a plurality-matching re(urn)word string
         if dentry[FLAGS][ISREG] in 'fF' and sData.tense == PAST:
             retword = self.getIrregVerb(w, PASTTENSE)
-        elif (dentry[FLAGS][ISREG] in 'fF' and sData.person == THIRD and sData.pIsSing()):
+        elif (dentry[FLAGS][ISREG] in 'fF'
+              and sData.person == THIRD
+              and sData.pIsSing()):
             retword = self.getIrregVerb(w, THIRDPRESENT)
-        else:		# conjugate a regular verb
-            if (sData.tense == PRESENT and sData.person == THIRD and	sData.pIsSing()):
+        else: # conjugate a regular verb
+            if (sData.tense == PRESENT
+                and sData.person == THIRD
+                and sData.pIsSing()):
                 if w[-1] == 'y' and w[-2] not in VOWELS:
                     retword = w[:-1] + 'ie'
                 else:
-                    if w[-1] == 'x': retword = w + 'e'
+                    if w[-1] == 'x':
+                        retword = w + 'e'
                     elif w[-1] in 'sh' and w[-2] in 'sc':
                         retword = w + 'e'
-                    else: retword = w
+                    else:
+                        retword = w
                 retword += 's'
             else:
                 if sData.tense == PAST:
                     if w[-1] == 'y' and w[-2] not in VOWELS:
                         retword = w[:-1] + 'i'
-                    else: retword = w
+                    else:
+                        retword = w
                     if self.doubleLastLetter(dentry):
                         retword += w[-1]
-                    if retword[-1] == 'e': retword += 'd'
-                    else: retword += 'ed'
+                    if retword[-1] == 'e':
+                        retword += 'd'
+                    else:
+                        retword += 'ed'
                 else:
                     retword = w
-        if postpos: return retword + ' ' + postpos
-        else: return retword
+        if postpos:
+            return retword + ' ' + postpos
+        else:
+            return retword
     # end of doFiniteVerb
 
     def doParticiple(self, part, sData):
         if part in ('TrPresPart', 'TrPastPart'):
             dentry = random.choice(self.Di['TransInf'])
-        else: dentry = random.choice(self.Di['IntransInf'])
-        compound = dentry[0].split('_')     # phrasal verb
+        else:
+            dentry = random.choice(self.Di['IntransInf'])
+        compound = dentry[0].split('_')  # phrasal verb
         w = compound[0]
-        if len(compound) > 1: postpos = compound[1]
-        else: postpos = ''
-        retword = w 	# first assumption, revised in following block
+        if len(compound) > 1:
+            postpos = compound[1]
+        else:
+            postpos = ''
+        retword = w  # first assumption, revised in following block
         if part in ('TrPresPart', 'InPresPart'):
             if w[-1] == 'e':
                 if w[-2] == 'u' or w[-2] not in VOWELS:
-                    retword = w[:-1]		# "value", "smile"
-                elif w[-2] == 'i':  		# "die" -> "dy-"
+                    retword = w[:-1]         # "value", "smile"
+                elif w[-2] == 'i':           # "die" -> "dy-"
                     retword = w[:-2] + 'y'
             elif self.doubleLastLetter(dentry):
                 retword = w + w[-1]
             retword += 'ing'
-        else:		# past participles
-            if dentry[FLAGS][ISREG] in 'tT':		# form regular pp
+        else:  # past participles
+            if dentry[FLAGS][ISREG] in 'tT': # form regular pp
                 if w[-1] == 'y' and w[-2] not in VOWELS:
-                    retword = w[:-1] + 'i'		# "remedy" ->"remedied"
+                    retword = w[:-1] + 'i'   # "remedy" ->"remedied"
                 if self.doubleLastLetter(dentry):
                     retword += w[-1]
-                if retword[-1] == 'e': retword += 'd'
-                else: retword += 'ed'
+                if retword[-1] == 'e':
+                    retword += 'd'
+                else:
+                    retword += 'ed'
             else:
                 retword = self.getIrregVerb(w, PASTPARTICIPLE)
-        if postpos: return retword + ' ' + postpos
-        else: return retword
+        if postpos:
+            return retword + ' ' + postpos
+        else:
+            return retword
