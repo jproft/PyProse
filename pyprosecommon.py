@@ -1,53 +1,51 @@
-# pyprosecommon.py: constant-type definitions to increase readability
+# pyprosecommon.py
+#
+# constant-type definitions to increase readability
 # many of these are determined by the (ancient!) encoding of the
 # dictionary file PyProse inherits from earlier incarnations of Prose
 
 import wx
 import os, sys
 
-PLURAL            = 2
-SINGULAR	= 1
-UNSET		= None
-FIRST		= 1
-SECOND	        = 2
-THIRD		= 3
-PRESENT		= 1
-PAST		= 2
-CURRENT         = -1		# position in plurality stack
+PLURAL     = 2
+SINGULAR   = 1
+UNSET      = None
+FIRST      = 1
+SECOND     = 2
+THIRD      = 3
+PRESENT    = 1
+PAST       = 2
+CURRENT    = -1      # position in plurality stack
+
 # these values (except UNSET), entirely arbitrary, allow us to track
 # plurality, person and tense states for each sentence.
-#	for plurality, a stack implemented as a list, pushing the state
+
+# for plurality, a stack implemented as a list, pushing the state
 # means appending the current plurality (possibly UNSET), and popping
 # means popping the last (-1) item; to test **current** plurality,
 # check whether plurStack[-1] == None (plurStack[CURRENT] == UNSET)
 
-VOWELS	= 'aeiouAEIOU'		# handle 'y' separately
+VOWELS	= 'aeiouAEIOU'    # handle 'y' separately
 
 # for the dictionary
-FLAGS		= 3		# last field in each word entry
-ISSING	        = 0		# position w/i field
-ISPLUR	        = 1		#	"
-ISREG		= 2		#	"
-SYLS		= 1		# field in word entry
-STRESS    	= 2		#	"
+FLAGS      = 3       # last field in each word entry
+ISSING     = 0       # position w/i field
+ISPLUR     = 1       #        "
+ISREG      = 2       #        "
+SYLS       = 1       # field in word entry
+STRESS     = 2       #        "
 
-# for searches of IrregPart section of dictionary -- NOT
-#	arbitrary, offsets specified in dictionary structure
-INFINITIVE		= 0 # we never actually use this one
-THIRDPRESENT	= 1
-PASTTENSE		= 2
-PASTPARTICIPLE	= 3
+# for searches of IrregPart section of dictionary --
+# NOT arbitrary, offsets specified in dictionary structure
+
+INFINITIVE      = 0  # we never actually use this one
+THIRDPRESENT    = 1
+PASTTENSE       = 2
+PASTPARTICIPLE  = 3
 
 # used in display of trees, and calculations on them
 TREEBLANK = " " * 6
-TWIGMARK = "->"
-
-NAVKEYS =(wx.WXK_LEFT,wx.WXK_RIGHT,wx.WXK_UP,wx.WXK_DOWN,wx.WXK_HOME,
-          wx.WXK_END,wx.WXK_PAGEUP,wx.WXK_PAGEDOWN,wx.WXK_NUMPAD_LEFT,
-          wx.WXK_NUMPAD_RIGHT,wx.WXK_NUMPAD_UP,wx.WXK_NUMPAD_DOWN,
-          wx.WXK_NUMPAD_HOME,wx.WXK_NUMPAD_END,wx.WXK_NUMPAD_PAGEUP,
-          wx.WXK_NUMPAD_PAGEDOWN)
-
+TWIGMARK  = "->"
 
 abouttxt = """\
 A Python version of "Prose"

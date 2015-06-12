@@ -1,15 +1,14 @@
 # pygui.py
+#
 # The interface classes for PyProse
 
 import wx.stc as stc
 from pyprosecommon import * # for help & about texts and wx import
-#from pygram import *
-#from pydict import *
 import pygram
 import pydict
 
 # Note: It is essential to import random AFTER the two other modules.
-# Each of them needs to import it; but each time it's iimported, the
+# Each of them needs to import it; but each time it's imported, the
 # the generator is reseeded. The import here must be the last, if 
 # we're to use setstate/getstate to reproduce conditions for 
 # rebuilding a sentence tree
@@ -19,15 +18,15 @@ import random
 class ProseFrame(wx.Frame):
 
         def __init__(self, title):
-                wx.Frame.__init__(self, None, -1, title, size=(900,700))   # or just 700 wide?
+                wx.Frame.__init__(self, None, -1, title, size=(900,700))
                 if not self.GetDataFiles():
                         wx.Exit()
-                self.s = []                # list of instances of class Sentence
-                self.currSent = -1    # increment as index
-                random.seed()	# just once per app run, for reconstruction
+                self.s = []         # list of instances of class Sentence
+                self.currSent = -1  # increment as index
+                random.seed()	    # just once per app run, for reconstruction
                 self.outSTC = OutputSTC(self, -1)
                 self.treeWin = TreeSTC(self, -1)
-        # sizers and layout
+                # sizers and layout
                 outsizer = wx.BoxSizer(wx.HORIZONTAL)
                 treesizer = wx.BoxSizer(wx.HORIZONTAL)
                 outsizer.Add(self.outSTC, 1, wx.EXPAND)
@@ -278,13 +277,11 @@ class OutputSTC(stc.StyledTextCtrl):
 # rather than using the STC, the display itself, as the data-home of all the sentences.
 
         def OnKeyDown(self, event):
-                """Keystrokes: space for generate; Exc for IPython shell"""
+                """ Keystrokes: space for generate; escape to quit. """
                 if event.KeyCode == wx.WXK_SPACE:
                         self.GetParent().GenerateSentence()
-                elif event.KeyCode in NAVKEYS: event.Skip()
                 elif event.KeyCode == wx.WXK_ESCAPE:
-                        p = self.GetParent()
-                        p.theApp.ipshell()
+                        self.GetParent().Close()
 
 
 # end of class OutputSTC
