@@ -175,8 +175,10 @@ class TreeSTC(stc.StyledTextCtrl):
                         endSel = self.PositionFromLine(ln-1) + self.LineLength(ln-1)
                         self.SetSelection(self.GetSelectionStart(), endSel)
                         twigs = MarkTwigLimits(mom, sentInx)
-                        mom.outSTC.SetSelection(twigs[twigsBefore][0],
-                                                twigs[twigsBefore+twigCount-1][1])
+                        if len(twigs):
+                                mom.outSTC.SetSelection(
+                                        twigs[twigsBefore][0],
+                                        twigs[twigsBefore+twigCount-1][1])
 #
 # # # # # # end of TreeStC itself
 
