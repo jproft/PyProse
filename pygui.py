@@ -4,9 +4,9 @@
 
 import wx
 import wx.stc as stc
-from pyprosecommon import * # for help & about texts and wx import
-import pygram
-import pydict
+import pygram, pydict
+from pyprosecommon import *
+from os import getcwd
 
 # Note: It is essential to import random AFTER the two other modules.
 # Each of them needs to import it; but each time it's imported, the
@@ -66,9 +66,8 @@ class ProseFrame(wx.Frame):
 
         def SaveOutput(self, event):
                 """Write all text output so far to a file"""
-                if self.outSTC.GetLength() < 6: return
                 dlg = wx.FileDialog(self, message="File for saved output",
-                                    defaultDir=os.getcwd(), defaultFile="output.txt",
+                                    defaultDir=getcwd(), defaultFile="output.txt",
                                     wildcard="*.txt", style=wx.SAVE | wx.CHANGE_DIR |
                                     wx.OVERWRITE_PROMPT)
                 if dlg.ShowModal() == wx.ID_OK:
@@ -194,9 +193,7 @@ def MarkTwigLimits(theFrame, sent):
 
 def IsTwigLine(s):
         """Non-class helper for TreeSTC: Identify a 'twig' line"""
-        if s.find(TWIGMARK) != -1 and s.find('#') == -1:
-                return True
-        else: return False
+        return (s.find(TWIGMARK) != -1 and s.find('#') == -1)
 
 
 # end of class TreeSTC (and adjunct functions)
