@@ -2,6 +2,7 @@
 #
 # The interface classes for PyProse
 
+import wx
 import wx.stc as stc
 from pyprosecommon import * # for help & about texts and wx import
 import pygram
@@ -19,8 +20,8 @@ class ProseFrame(wx.Frame):
 
         def __init__(self, title):
                 wx.Frame.__init__(self, None, -1, title, size=(900,700))
-                if not self.GetDataFiles():
-                        wx.Exit()
+                self.dict = pydict.PDict(self)
+                self.grammar = pygram.Grammar(self)
                 self.s = []         # list of instances of class Sentence
                 self.currSent = -1  # increment as index
                 random.seed()	    # just once per app run, for reconstruction
@@ -103,16 +104,6 @@ class ProseFrame(wx.Frame):
                 if self.Timer.IsRunning():
                         self.Timer.Stop()
                 else: evt.Skip()
-
-        def GetDataFiles(self):
-                """Find GRA and DIC files; create our grammar and dictionary"""
-                dfilename = LocateDataFile("PROSEDIC")
-                if not dfilename: return False
-                self.dict = pydict.PDict(self, dfilename)
-                gfilename = LocateDataFile("PROSEGRA")
-                if not gfilename: return False
-                self.grammar = pygram.Grammar(self, gfilename)
-                return True
 
         def GenerateSentence(self):
                 """Calls grammar to make template, dictionary to fill it in"""

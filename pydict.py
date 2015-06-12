@@ -12,7 +12,7 @@ flagchars = '!\#@'		# mark special comps in sentence template
 
 class PDict:
 
-    def __init__(self, mom, filename):
+    def __init__(self, mom):
         self.mom = mom
         self.Di = {}
         for part, entries in DICTIONARY.items():

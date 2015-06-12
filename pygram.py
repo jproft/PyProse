@@ -21,11 +21,12 @@ from grammar import GRAMMAR
 
 class Grammar:
 
-    def __init__(self, mom, filename):
-        """Read the Grammar file into the internal data structure"""
+    def __init__(self, mom):
+        """Read the GRAMMAR dictionary into the internal data structure"""
         self.mom = mom
         self.Gr = {}
         for pred, rules in GRAMMAR.items():
+            self.Gr[pred] = []
             for rule in rules:
                 slist = rule.split()
                 if slist[0].isdigit():
@@ -35,10 +36,7 @@ class Grammar:
                     weight = 1
                     start = 0
                 for i in range(weight): # repeat rule in Gr
-                    if pred not in self.Gr:
-                        self.Gr[pred] = [slist[start:]]
-                    else:
-                        self.Gr[pred].append(slist[start:])
+                    self.Gr[pred].append(slist[start:])
 
     def BuildTemplate(self):
         self.template = []

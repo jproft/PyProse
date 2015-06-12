@@ -4,8 +4,7 @@
 # many of these are determined by the (ancient!) encoding of the
 # dictionary file PyProse inherits from earlier incarnations of Prose
 
-import wx
-import os, sys
+import sys
 
 PLURAL     = 2
 SINGULAR   = 1
@@ -76,39 +75,3 @@ panel, PyProse will reconstruct and display its tree.
 Click on any part of the tree in the right-hand panel 
 to highlight the corresponding output in the left panel.
 """
-
-# the following functions are Not the Right Way to locate our grammar and
-# dictionary data files, though they seem to work on Mac and Windows
-
-def GetDefaultFilename(filename):
-    wildcard = "All files (*.*) | *.*"
-    # baroque way to get probable launched-from directory
-    try:
-        basedir = os.path.dirname(os.path.abspath(__file__))
-    except:
-        basedir = os.path.dirname(os.path.abspath(sys.argv[0]))
-    if sys.platform == 'darwin':	# Mac is weird!
-        upto = basedir.find('/Contents/Resources')
-        if upto != -1:
-            basedir = basedir[:basedir[:upto].rfind('/')]
-        return basedir + '/' + filename
-    else:
-        upto = basedir.find('.exe')
-        if upto != -1:
-            basedir = basedir[:basedir[:upto].rfind('\\')]
-        return basedir + '\\' + filename
-
-def LocateDataFile(filename):
-    if os.path.exists(filename):
-        return filename
-    dlg = wx.FileDialog(self, message="Please locate the file " + filename,
-                        defaultDir=os.getcwd(), defaultFile=filename,
-                        wildcard=wildcard, style=wx.OPEN | wx.CHANGE_DIR)
-    if dlg.ShowModal() == wx.ID_OK:
-        filename = dlg.GetPath()
-        dlg.Destroy()
-        if os.path.exists(filename): return filename
-        else: return None
-    else:
-        dlg.Destroy()
-        return None
