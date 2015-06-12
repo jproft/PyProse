@@ -144,9 +144,6 @@ class ProseFrame(wx.Frame):
         self.outSTC.GotoLine(self.outSTC.GetLineCount()+1)
         self.currSent = len(self.s) - 1
 
-# end of class ProseFrame
-# # # # # # # # # # # # #
-
 
 class TreeSTC(stc.StyledTextCtrl):
     
@@ -154,10 +151,11 @@ class TreeSTC(stc.StyledTextCtrl):
         """Initialize a StyledTextControl for display of sentence trees"""
         stc.StyledTextCtrl.__init__(self, parent, ID)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnMouseDown)
+        self.mom = parent
 
     def OnMouseDown(self, event):
         """Select portion of tree embedded with clicked line, and what corresponds in output"""
-        mom = self.GetParent()	# to examine and mark output text
+        self.mom = self.GetParent() # to examine and mark output text
         cLine = self.LineFromPosition(
             self.PositionFromPoint(event.GetPosition())
         )
@@ -168,73 +166,63 @@ class TreeSTC(stc.StyledTextCtrl):
         self.SetSelection(lStrt, self.GetLineEndPosition(cLine))
         twigsBefore = 0
         for ln in range(cLine):
-            if IsTwigLine(self.GetLine(ln)):
+            if self.IsTwigLine(self.GetLine(ln)):
                 twigsBefore += 1
         line = self.GetLine(cLine)
-        sentInx = mom.currSent
-        if line.find(TWIGMARK) != -1:	# a twig
-            if line.find('#') == -1:	# other than a flag
-                twigs = MarkTwigLimits(mom, sentInx)
-                mom.outSTC.SetSelection(
+        sentInx = self.mom.currSent
+        if line.find(TWG) != -1:        # a twig
+            if line.find('#') == -1:    # other than a flag
+                twigs = self.MarkTwigLimits(sentInx)
+                self.mom.outSTC.SetSelection(
                     twigs[twigsBefore][0], 
                     twigs[twigsBefore][1]
                 )
             else:      # flag, no repr in output; erase any selection
-                mom.outSTC.SetSelection(
-                    mom.outSTC.GetSelectionStart(), 
-                    mom.outSTC.GetSelectionStart()
+                self.mom.outSTC.SetSelection(
+                    self.mom.outSTC.GetSelectionStart(), 
+                    self.mom.outSTC.GetSelectionStart()
                 )
         else:		# a predicate
-            level = line.count(TREEBLANK);
+            level = line.count(TAB);
             twigCount = ln = 0
             for ln in range(cLine+1, self.GetLineCount()):
                 s = self.GetLine(ln)
-                if s.count(TREEBLANK) <= level:
+                if s.count(TAB) <= level:
                     break
-                if IsTwigLine(s):
+                if self.IsTwigLine(s):
                     twigCount += 1
             if ln:
                 endSel = self.PositionFromLine(ln-1) + self.LineLength(ln-1)
                 self.SetSelection(self.GetSelectionStart(), endSel)
-                twigs = MarkTwigLimits(mom, sentInx)
+                twigs = self.MarkTwigLimits(sentInx)
                 if len(twigs) > twigsBefore:
-                    mom.outSTC.SetSelection(
+                    self.mom.outSTC.SetSelection(
                         twigs[twigsBefore][0], 
                         twigs[twigsBefore+twigCount-1][1]
                     )
-#
-# # # # # # end of TreeStC itself
 
-# non-class functions to do bits of TreeSTC's OnMouseDown's work
-
-def MarkTwigLimits(theFrame, sent):
-    """Nonclass helper for TreeSTC: [what does this do??]"""
-    sStart = theFrame.s[sent].offset
-    sEnd = sStart + theFrame.s[sent].length
-    s = theFrame.outSTC.GetTextRange(sStart, sEnd)
-    twiglist = [[sStart,sStart]]
-    c = 0
-    while c < len(s):
-        if s[c] in " ,)(;:.?":
-            twiglist[len(twiglist)-1][1] = c + sStart
-            if s[c] == ' ':
-                c += 1
-            if c >= len(s):
-                break
-            twiglist.append([c+sStart,c+sStart+1])
-            if s[c] == '(':
-                c += 1
+    def MarkTwigLimits(self, sent):
+        sStart = self.mom.s[sent].offset
+        sEnd = sStart + self.mom.s[sent].length
+        s = self.mom.outSTC.GetTextRange(sStart, sEnd)
+        twiglist = [[sStart,sStart]]
+        c = 0
+        while c < len(s):
+            if s[c] in " ,)(;:.?":
+                twiglist[len(twiglist)-1][1] = c + sStart
+                if s[c] == ' ':
+                    c += 1
+                if c >= len(s):
+                    break
                 twiglist.append([c+sStart,c+sStart+1])
-        c += 1
-    return twiglist
+                if s[c] == '(':
+                    c += 1
+                    twiglist.append([c+sStart,c+sStart+1])
+            c += 1
+        return twiglist
 
-def IsTwigLine(s):
-    """Non-class helper for TreeSTC: Identify a 'twig' line"""
-    return (s.find(TWIGMARK) != -1 and s.find('#') == -1)
-
-
-# end of class TreeSTC (and adjunct functions)
-# # # # # # # # # # # # # # # # # # # # # # #
+    def IsTwigLine(self, sent):
+        return (sent.find(TWG) != -1 and sent.find('#') == -1)
 
 
 class OutputSTC(stc.StyledTextCtrl):
