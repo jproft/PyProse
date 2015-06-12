@@ -20,49 +20,69 @@ class ProseFrame(wx.Frame):
 
     def __init__(self, title):
         wx.Frame.__init__(self, None, -1, title, size=(900,700))
-        self.dict = pydict.PDict(self)
-        self.grammar = pygram.Grammar(self)
+        
         self.s = []         # list of instances of class Sentence
         self.currSent = -1  # increment as index
+        
         random.seed()	    # just once per app run, for reconstruction
+
+        self.dict = pydict.PDict(self)
+        self.grammar = pygram.Grammar(self)
+        
         self.outSTC = OutputSTC(self, -1)
         self.treeWin = TreeSTC(self, -1)
-        # sizers and layout
-        outsizer = wx.BoxSizer(wx.HORIZONTAL)
-        treesizer = wx.BoxSizer(wx.HORIZONTAL)
-        outsizer.Add(self.outSTC, 1, wx.EXPAND)
-        treesizer.Add(self.treeWin, 1, wx.EXPAND)
-        topsizer = wx.BoxSizer(wx.HORIZONTAL)
-        topsizer.Add(outsizer, 2, wx.EXPAND)
-        topsizer.Add(treesizer, 1, wx.EXPAND)
+        
+        # SIZERS AND LAYOUT #
+
+        ls = wx.BoxSizer(wx.HORIZONTAL)
+        rs = wx.BoxSizer(wx.HORIZONTAL)
+        ms = wx.BoxSizer(wx.HORIZONTAL)
+        
+        ls.Add(self.outSTC, 1, wx.EXPAND)
+        rs.Add(self.treeWin, 1, wx.EXPAND)
+        
+        ms.Add(ls, 2, wx.EXPAND)
+        ms.Add(rs, 1, wx.EXPAND)
+        
         self.SetAutoLayout(True)
-        self.SetSizer(topsizer)
+        self.SetSizer(ms)
         self.Layout()
-        # menu stuff
+        
+        # MENU STUFF #
+        
         menuBar = wx.MenuBar()
-        menu1 = wx.Menu()
-        menu1.Append(101, "&Save output\tCtrl+S")
-        menuBar.Append(menu1, "File")
-        menu2 = wx.Menu()
-        menu2.Append(201, "&Generate one sentence\tCtrl+G")
-        menu2.Append(202, "&Until mouse-click\tCtrl+U")
-        menuBar.Append(menu2, "Sentences")
-        HelpMenu = wx.Menu()
-        HelpMenu.Append(301, "PyProse help")
-        HelpMenu.Append(wx.ID_ABOUT, "About PyProse")
-        menuBar.Append(HelpMenu, "&Help")
+
+        titles = ["File", "Sentences", "&Help"]  # Keep 'Help' last!
+        menus = [wx.Menu() for t in titles]
+
+        items = [
+            ("&Save output\tCtrl+S", 101, self.SaveOutput),
+            ("&Generate one sentence\tCtrl+G", 201, self.GenOne),
+            ("&Until mouse-click\tCtrl+U", 202, self.GenMany),
+            ("PyProse help", 301, self.ShowHelp),
+            ("About PyProse", wx.ID_ABOUT, self.ShowAbout)
+        ]
+
+        for t in items:
+            if t[1] == wx.ID_ABOUT:
+                menus[len(menus)-1].Append(t[1], t[0])
+            else:
+                menus[t[1]//100-1].Append(t[1], t[0])
+            self.Bind(wx.EVT_MENU, t[2], id=t[1])
+
+        for i, m in enumerate(menus):
+            menuBar.Append(m, titles[i])
+
         wx.GetApp().SetMacHelpMenuTitleName("&Help")
-        self.Bind(wx.EVT_MENU, self.SaveOutput, id=101)
-        self.Bind(wx.EVT_MENU, self.GenOne, id=201) # cf. timer
-        self.Bind(wx.EVT_MENU, self.GenMany, id=202)
-        self.Bind(wx.EVT_MENU, self.ShowAbout, id=wx.ID_ABOUT)
-        self.Bind(wx.EVT_MENU, self.ShowHelp, id=301)
         self.SetMenuBar(menuBar)
-        # a few other setup tidbits
+
+        # OTHER SETUP #
+        
         self.Timer = wx.Timer(self) # for continuous gen
-        self.Bind(wx.EVT_TIMER, self.GenOne)	# cf. menu 201
+        self.Bind(wx.EVT_TIMER, self.GenOne)  # cf. menu 201
         self.outSTC.Bind(wx.EVT_LEFT_DOWN, self.OnMouseDown)
-        self.AboutBox()                
+
+        self.AboutBox() # Show 'About' on start.
 
     def SaveOutput(self, event):
         """Write all text output so far to a file"""
@@ -72,10 +92,8 @@ class ProseFrame(wx.Frame):
             style=wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT
         )
         if dlg.ShowModal() == wx.ID_OK:
-            fname = dlg.GetPath()
-            f = open(fname, 'w')
-            f.write(self.outSTC.GetText())
-            f.close()
+            with open(dlg.GetPath(), 'w') as f:
+                f.write(self.outSTC.GetText())
         dlg.Destroy()
 
     def ShowAbout(self, evt):
@@ -83,7 +101,7 @@ class ProseFrame(wx.Frame):
 
     def AboutBox(self):
         dlg = wx.MessageDialog(
-            self, message=ABOUT_TEXT,
+            self, message=ABOUT_TEXT, 
             caption="PyProse", style=wx.OK
         )
         dlg.ShowModal()
@@ -161,14 +179,14 @@ class TreeSTC(stc.StyledTextCtrl):
             if line.find('#') == -1:	# other than a flag
                 twigs = MarkTwigLimits(mom, sentInx)
                 mom.outSTC.SetSelection(
-                    twigs[twigsBefore][0],
+                    twigs[twigsBefore][0], 
                     twigs[twigsBefore][1]
                 )
             else:      # flag, no repr in output; erase any selection
                 mom.outSTC.SetSelection(
-                    mom.outSTC.GetSelectionStart(),
+                    mom.outSTC.GetSelectionStart(), 
                     mom.outSTC.GetSelectionStart()
-            )
+                )
         else:		# a predicate
             level = line.count(TREEBLANK);
             twigCount = 0
@@ -183,7 +201,7 @@ class TreeSTC(stc.StyledTextCtrl):
             twigs = MarkTwigLimits(mom, sentInx)
             if len(twigs):
                 mom.outSTC.SetSelection(
-                    twigs[twigsBefore][0],
+                    twigs[twigsBefore][0], 
                     twigs[twigsBefore+twigCount-1][1]
                 )
 #
