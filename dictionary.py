@@ -758,7 +758,7 @@ DICTIONARY = {
         "nest 1 1 TFT",
         "net 1 1 TFT",
         "network 2 1 TFT",
-        "newpaper 3 1 TFT",
+        "newspaper 3 1 TFT",
         "news 1 1 TFF",
         "night 1 1 TFT",
         "noise 1 1 TFT",
