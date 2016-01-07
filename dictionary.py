@@ -3119,7 +3119,7 @@ DICTIONARY = {
         "dance 1 1 FTT",
         "decline 2 2 FTT",
         "die 1 1 FTT",
-        "differ 2 1 FTF",
+        "differ 2 1 FTT",
         "dive 1 1 FTF",
         "do 1 1 TTF",
         "dream 1 1 FTT",
