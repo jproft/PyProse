@@ -282,6 +282,7 @@ class PDict:
         w = compound[0]   # the main-verb part of a phrasal
         if len(compound) > 1:
             postpos = compound[1]
+            dentry[0] = w
         else:
             postpos = ''  # test at end for "if phrasal"
         # build a plurality-matching re(urn)word string
