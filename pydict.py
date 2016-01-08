@@ -335,6 +335,7 @@ class PDict:
         w = compound[0]
         if len(compound) > 1:
             postpos = compound[1]
+            dentry[0] = w
         else:
             postpos = ''
         retword = w  # first assumption, revised in following block
