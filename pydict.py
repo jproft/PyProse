@@ -105,7 +105,10 @@ class PDict:
         if sData.pIsPlur() or random.randint(0,2):
             w = random.choice(self.Di['Noun'])
             if w[FLAGS][ISPLUR] in 'tT' or sData.pIsSing():
-                return w[0] + "'s"
+                if w[0][-1] == "s":
+                    return w[0] + "'"
+                else:
+                    return w[0] + "'s"
             else:
                 while w[FLAGS][ISREG] not in 'tT':
                     w = random.choice(self.Di['Noun'])
