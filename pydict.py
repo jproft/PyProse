@@ -29,38 +29,38 @@ class PDict:
     # to return it (and will anything else use it anyway?)
     # TODO: note missing underbar-to-invisible-compound translation
     def BuildSentence(self, template, sData):
-        s = ''			# where our sentence accumulates
-        for i in template:	# from grammar.BuildTemplate
+        words = []			# where our words accumulate
+        for p in template:	# from grammar.BuildTemplate
             addword = ''
-            if i[0] == '!':
-                addword = i[1:]		# word-literal
-            elif i[0] == '#':
-                self.doFlags(i[1:], sData)
-            elif i[0] == '@':
-                addword = self.doPunct(i[1:], sData)
-            elif i == 'Determiner':
+            if p[0] == '!':
+                addword = p[1:]		# word-literal
+            elif p[0] == '#':
+                self.doFlags(p[1:], sData)
+            elif p[0] == '@':
+                addword = self.doPunct(p[1:], sData)
+            elif p == 'Determiner':
                 addword = self.doDeterminer(sData)
-            elif i == 'IndefArt':	# sometimes the grammar specifies
+            elif p == 'IndefArt':	# sometimes the grammar specifies
                 addword = self.doIndefArt(sData)
-            elif i == 'Copula':
+            elif p == 'Copula':
                 addword = self.doCopula(sData)
-            elif i == 'ToHave':
+            elif p == 'ToHave':
                 addword = self.doToHave(sData)
-            elif i == 'SubjPron':
+            elif p == 'SubjPron':
                 addword = self.doSubjPron(sData)
-            elif i == 'Possessive':
+            elif p == 'Possessive':
                 addword = self.doPossessive(sData)
-            elif i in ('TransVerb', 'IntrVerb', 'AuxInf'):
-                addword = self.doFiniteVerb(i, sData)
-            elif i[-4:] == 'Part':
-                addword = self.doParticiple(i, sData)
-            elif i not in ('Noun', 'Substance', 'Adjective', 'AuxVerb'):
-                addword = random.choice(self.Di[i])[0]
+            elif p in ('TransVerb', 'IntrVerb', 'AuxInf'):
+                addword = self.doFiniteVerb(p, sData)
+            elif p[-4:] == 'Part':
+                addword = self.doParticiple(p, sData)
+            elif p not in ('Noun', 'Substance', 'Adjective', 'AuxVerb'):
+                addword = random.choice(self.Di[p])[0]
             else:
                 if sData.person == UNSET:
                     sData.person = THIRD	# cheat
                 while True:	# loop until word can be made to conform
-                    w = random.choice(self.Di[i])
+                    w = random.choice(self.Di[p])
                     if sData.pIsUnset():
                         if w[FLAGS][ISSING] in 'tT':
                             sData.pSetSing()
@@ -70,7 +70,7 @@ class PDict:
                         addword = w[0]
                         break			# success, by luck
                     # what gets here disagrees with current plurality
-                    if i not in ('Noun', 'Substance'):
+                    if p not in ('Noun', 'Substance'):
                         continue # retry
                     if w[FLAGS][ISREG] in 'fF': # irregular noun
                         continue	# retry new word
@@ -78,17 +78,19 @@ class PDict:
                     break
             if sData.indefArtPending and addword and addword != 'a':
                 if addword[0] in VOWELS:
-                    s += 'n'
+                    words[-1] += 'n'
                 sData.indefArtPending = False
-            # conditions for adding blank before "words"
-            if s and (i[0] not in '#@') and (s[-1] != '('):
-                s += ' '
             if addword == None:
                 addword = "<program error!>"
-            s += addword
+            words.append(addword)
             # looping back for next component
-        s1 = ' '.join(s.split('_'))        # should be ''.join instead???
-        return s1[0].upper() + s1[1:] + ' '
+        sentence = words[0].capitalize()
+        for i in range(1, len(words)):
+            # conditions for adding blank before "words"
+            if not (template[i][0] in '#@' or words[i-1].endswith('(')):
+                sentence += ' '
+            sentence += words[i]
+        return ' '.join(sentence.split('_')) + ' '
     # end of BuildSentence (major distribution point)
 
     def agree(self, wordentry, sData):
