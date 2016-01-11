@@ -272,7 +272,6 @@ class OutputSTC(stc.StyledTextCtrl):
         bgn = fin = self.PositionFromPoint(event.GetPosition())
         while bgn > 0 and not chr(self.GetCharAt(bgn)).isspace():
             bgn -= 1
-        bgn += 1
         if not chr(self.GetCharAt(bgn)).isalnum():
             bgn += 1
         while fin < self.GetTextLength() and not chr(self.GetCharAt(fin)).isspace():
