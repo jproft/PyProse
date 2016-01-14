@@ -266,10 +266,11 @@ class OutputSTC(stc.StyledTextCtrl):
             bgn -= 1
         if not chr(self.GetCharAt(bgn)).isalnum():
             bgn += 1
+        if chr(self.GetCharAt(bgn)) == '(':
+            bgn += 1
         while fin < self.GetTextLength() and not chr(self.GetCharAt(fin)).isspace():
             fin += 1
-        # flaw: excludes terminal apostrophe from plural possessives
-        if not chr(self.GetCharAt(fin-1)).isalnum() and not chr(self.GetCharAt(fin-1)) == '\'':
+        if not (chr(self.GetCharAt(fin-1)).isalnum() or chr(self.GetCharAt(fin-1)) in "'-"):
             fin -= 1
         self.SetSelection(bgn, fin)
 
