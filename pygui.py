@@ -133,14 +133,14 @@ class ProseFrame(wx.Frame):
         sData.randstate = random.getstate()
         # next three lines, the whole center of the business
         self.treeWin.ClearAll()         # prepare to draw new tree
-        sentenceTemplate = self.grammar.BuildTemplate()
-        sent = self.dict.BuildSentence(sentenceTemplate, sData)
+        sData.template = self.grammar.BuildTemplate()
+        sData.sent = self.dict.BuildSentence(sData.template, sData)
         # display; sentences added at end, go to end before figuring offset!
         self.outSTC.GotoLine(self.outSTC.GetLineCount()+1)
         sData.offset = self.outSTC.GetCurrentPos()
-        sData.length = len(sent)
+        sData.length = len(sData.sent)
         self.s.append(sData)
-        self.outSTC.AddText(sent)
+        self.outSTC.AddText(sData.sent)
         self.outSTC.GotoLine(self.outSTC.GetLineCount()+1)
         self.currSent = len(self.s) - 1
 
@@ -201,25 +201,17 @@ class TreeSTC(stc.StyledTextCtrl):
                         twigs[twigsBefore+twigCount-1][1]
                     )
 
-    def MarkTwigLimits(self, sent):
-        sStart = self.mom.s[sent].offset
-        sEnd = sStart + self.mom.s[sent].length
-        s = self.mom.outSTC.GetTextRange(sStart, sEnd)
-        twiglist = [[sStart,sStart]]
-        c = 0
-        while c < len(s):
-            if s[c] in " ,)(;:.?":
-                twiglist[len(twiglist)-1][1] = c + sStart
-                if s[c] == ' ':
-                    c += 1
-                if c >= len(s):
-                    break
-                twiglist.append([c+sStart,c+sStart+1])
-                if s[c] == '(':
-                    c += 1
-                    twiglist.append([c+sStart,c+sStart+1])
-            c += 1
-        return twiglist
+    def MarkTwigLimits(self, sentInx):
+        cur = self.mom.s[sentInx].offset
+        words = self.mom.s[sentInx].words
+        twigs = [[cur, cur + len(words[0])]]
+        for i in range(1, len(words)):
+            cur = twigs[-1][1]
+            if words[i] and cur > self.mom.s[sentInx].offset:
+                if words[i] not in '.,;:?)' and words[i-1] != '(':
+                    cur += 1
+            twigs.append([cur, cur + len(words[i])])
+        return [t for t in twigs if t[0] != t[1]]
 
     def IsTwigLine(self, sent):
         return (sent.find(TWG) != -1 and sent.find('#') == -1)
