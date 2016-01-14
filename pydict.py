@@ -25,11 +25,8 @@ class PDict:
 
     # central distribution point for language-massage machinery --
     # returns a string which is the finished sentence
-    # alters sData, but it's mutable (object of type Sentence), no need
-    # to return it (and will anything else use it anyway?)
-    # TODO: note missing underbar-to-invisible-compound translation
     def BuildSentence(self, template, sData):
-        words = []			# where our words accumulate
+        sData.words = []		# where our words accumulate
         for p in template:	# from grammar.BuildTemplate
             addword = ''
             if p[0] == '!':
@@ -78,18 +75,21 @@ class PDict:
                     break
             if sData.indefArtPending and addword and addword != 'a':
                 if addword[0] in VOWELS:
-                    words[-1] += 'n'
+                    sData.words[-1] += 'n'
                 sData.indefArtPending = False
             if addword == None:
                 addword = "<program error!>"
-            words.append(addword)
+            sData.words.append(addword)
             # looping back for next component
-        sentence = words[0].capitalize()
-        for i in range(1, len(words)):
+        # the first non-blank word in the word list
+        firstWord = next(s for s in sData.words if s) 
+        sentence = firstWord.capitalize() # where our sentence accumulates
+        for i in range(sData.words.index(firstWord) + 1, len(sData.words)):
             # conditions for adding blank before "words"
-            if not (template[i][0] in '#@' or words[i-1].endswith('(')):
+            if (not (template[i][0] in '#@' or sData.words[i-1].endswith('('))
+                or sData.words[i] == '(' or sData.words[i] == '--'):
                 sentence += ' '
-            sentence += words[i]
+            sentence += sData.words[i]
         return ' '.join(sentence.split('_')) + ' '
     # end of BuildSentence (major distribution point)
 
@@ -150,9 +150,7 @@ class PDict:
             sData.pUnset()	# plurality and person end (arbitrarily!)
             sData.person = UNSET	# at phrase/clause bounds
         if char == '-':
-            return ' --'
-        elif char == '(':
-            return ' ' + char
+            return '--'
         else:
             return char
         # omitting the random parens-to-dash conversion

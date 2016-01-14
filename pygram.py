@@ -50,6 +50,9 @@ class Sentence:
         self.plurStack = [None]
         self.indefArtPending = False
         self.randstate = random.getstate()
+        self.template = []
+        self.words = []
+        self.sent = ''
 
     def __repr__(self):
         s = 'offset ' + `self.offset`
