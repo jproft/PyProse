@@ -86,7 +86,7 @@ class PDict:
         sentence = firstWord.capitalize() # where our sentence accumulates
         for i in range(sData.words.index(firstWord) + 1, len(sData.words)):
             # conditions for adding blank before "words"
-            if (not (template[i][0] in '#@' or sData.words[i-1].endswith('('))
+            if (not (template[i][0] in '#@' or sentence.endswith('('))
                 or sData.words[i] == '(' or sData.words[i] == '--'):
                 sentence += ' '
             sentence += sData.words[i]

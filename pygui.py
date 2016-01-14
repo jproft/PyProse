@@ -203,15 +203,15 @@ class TreeSTC(stc.StyledTextCtrl):
 
     def MarkTwigLimits(self, sentInx):
         cur = self.mom.s[sentInx].offset
-        words = self.mom.s[sentInx].words
+        words = [w for w in self.mom.s[sentInx].words if w]
         twigs = [[cur, cur + len(words[0])]]
         for i in range(1, len(words)):
             cur = twigs[-1][1]
-            if words[i] and cur > self.mom.s[sentInx].offset:
+            if cur > self.mom.s[sentInx].offset:
                 if words[i] not in '.,;:?)' and words[i-1] != '(':
                     cur += 1
             twigs.append([cur, cur + len(words[i])])
-        return [t for t in twigs if t[0] != t[1]]
+        return twigs
 
     def IsTwigLine(self, sent):
         return (sent.find(TWG) != -1 and sent.find('#') == -1)
