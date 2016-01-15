@@ -204,13 +204,13 @@ class TreeSTC(stc.StyledTextCtrl):
     def MarkTwigLimits(self, sentInx):
         cur = self.mom.s[sentInx].offset
         words = [w for w in self.mom.s[sentInx].words if w]
-        twigs = [[cur, cur + len(words[0])]]
+        twigs = [(cur, cur + len(words[0]))]
         for i in range(1, len(words)):
             cur = twigs[-1][1]
             if cur > self.mom.s[sentInx].offset:
                 if words[i] not in '.,;:?)' and words[i-1] != '(':
                     cur += 1
-            twigs.append([cur, cur + len(words[i])])
+            twigs.append((cur, cur + len(words[i])))
         return twigs
 
     def IsTwigLine(self, sent):
@@ -259,9 +259,11 @@ class OutputSTC(stc.StyledTextCtrl):
         random.setstate(temprand)
 
     def OnDoubleClick(self, event):
-        self.handled = 0                # coordination with single-click
+        mom = self.GetParent()
+        self.handled = 0  # coordination with single-click
+        pos = self.PositionFromPoint(event.GetPosition())
         # select a single word (including internal punct, excluding terminal)
-        bgn = fin = self.PositionFromPoint(event.GetPosition())
+        bgn = fin = pos
         while bgn > 0 and not chr(self.GetCharAt(bgn)).isspace():
             bgn -= 1
         if not chr(self.GetCharAt(bgn)).isalnum():
@@ -272,7 +274,35 @@ class OutputSTC(stc.StyledTextCtrl):
             fin += 1
         if not (chr(self.GetCharAt(fin-1)).isalnum() or chr(self.GetCharAt(fin-1)) in "'-"):
             fin -= 1
-        self.SetSelection(bgn, fin)
+        twigs = mom.treeWin.MarkTwigLimits(mom.currSent)
+        sentence = mom.s[mom.currSent]
+        template = sentence.template
+        for i in range(len(twigs)):
+            if twigs[i][0] <= bgn and fin <= twigs[i][1]:
+                break
+        j = flags = 0
+        while j <= i + flags:
+            if template[j].startswith('#'):
+                flags += 1
+            j += 1
+        if not template[i+flags][0] in '@!':
+            newSent = pygram.Sentence() # so we can pick a new word
+            mom.dict.BuildSentence(template[:(i+flags+1)], newSent)
+            newWord = newSent.words[-1].replace('_', ' ')
+            if i == 0: newWord = newWord.capitalize()
+            oldWord = sentence.words[i+flags]
+            sentence.words[i+flags] = newWord
+            lenDiff = len(newWord) - len(oldWord)
+            sentence.length = sentence.length + lenDiff
+            for j in range(mom.currSent + 1, len(mom.s)):
+                mom.s[j].offset = mom.s[j].offset + lenDiff
+            # replace old word with new in output
+            self.Remove(twigs[i][0], twigs[i][1])
+            self.SetInsertionPoint(twigs[i][0])
+            self.AddText(newWord)
+            self.SetSelection(twigs[i][0], twigs[i][0] + len(newWord))
+        else:
+            self.SetSelection(twigs[i][0], twigs[i][1])
 
     def OnKeyDown(self, event):
         """ Keystrokes: space for generate; escape to quit. """
