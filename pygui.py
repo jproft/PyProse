@@ -131,9 +131,11 @@ class ProseFrame(wx.Frame):
         else:
             sData.tense = PAST
         sData.randstate = random.getstate()
-        # next three lines, the whole center of the business
-        self.treeWin.ClearAll()         # prepare to draw new tree
+        # next five lines, the whole center of the business
+        self.treeWin.SetReadOnly(False) # prepare to draw new tree
+        self.treeWin.ClearAll()         
         sData.template = self.grammar.BuildTemplate()
+        self.treeWin.SetReadOnly(True)
         sData.sent = self.dict.BuildSentence(sData.template, sData)
         # display; sentences added at end, go to end before figuring offset!
         self.outSTC.GotoLine(self.outSTC.GetLineCount()+1)
@@ -151,6 +153,7 @@ class TreeSTC(stc.StyledTextCtrl):
         """Initialize a StyledTextControl for display of sentence trees"""
         stc.StyledTextCtrl.__init__(self, parent, ID)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnMouseDown)
+        self.SetReadOnly(True)
         self.mom = parent
 
     def OnMouseDown(self, event):
@@ -202,6 +205,7 @@ class TreeSTC(stc.StyledTextCtrl):
                     )
 
     def MarkTwigLimits(self, sentInx):
+        if sentInx < 0: return # no sentences yet
         cur = self.mom.s[sentInx].offset
         words = [w for w in self.mom.s[sentInx].words if w]
         twigs = [(cur, cur + len(words[0]))]
@@ -236,6 +240,7 @@ class OutputSTC(stc.StyledTextCtrl):
 # latter selects the single word (excluding non-internal punctuation)
     def OnMousePrelimDown(self, event):
         self.handled = 0
+        self.SetFocus() # so we're not stuck on TreeSTC
         wx.CallAfter(self.OnMouseDown, event.GetPosition())
 
     def OnMouseDown(self, mouseclickpos):
@@ -261,6 +266,7 @@ class OutputSTC(stc.StyledTextCtrl):
     def OnDoubleClick(self, event):
         mom = self.GetParent()
         self.handled = 0  # coordination with single-click
+        if mom.currSent < 0: return # no sentences yet
         pos = self.PositionFromPoint(event.GetPosition())
         # select a single word (including internal punct, excluding terminal)
         bgn = fin = pos
